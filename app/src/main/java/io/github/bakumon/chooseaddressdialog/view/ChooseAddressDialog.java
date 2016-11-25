@@ -30,7 +30,7 @@ import io.github.bakumon.chooseaddressdialog.R;
  * 三级联动选择地区
  * 有对应的code
  * 记住上次选择的值
- * Created by mafei on 2016/10/19.
+ * Created by bakumon on 2016/10/19.
  */
 public class ChooseAddressDialog extends Dialog implements NumberPicker.OnValueChangeListener, View.OnClickListener {
 
