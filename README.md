@@ -6,13 +6,13 @@
 
 ## style
 
-利用 `WindowManager` 设置 Dialog 的布局和入场动画，来解决 Dialog 位于底部宽度无法充满屏幕。
+利用 `WindowManager` 设置 Dialog 的布局和入场动画，解决 Dialog 位于底部宽度无法充满屏幕。
 
-详细见：[自定义底部省市区选择 Dialog——宽度充满屏幕](http://bakumon.me/2016/11/24/android-dialog-bottom/)
+详细看这里：[自定义底部省市区选择 Dialog——宽度充满屏幕](http://bakumon.me/2016/11/24/android-dialog-bottom/)
 
 ## 初始化
 
-提供了三个构造器供初始化省市区使用，直接调用 show()显示
+提供了三个构造器供初始化省市区使用
 
 ### 1.默认
 
@@ -63,13 +63,15 @@ mChoiceManageAddressDialog.setChoiceCompleteListeners(new ChooseAddressDialog.On
         mTvArea.setText("" + mSelectedProvince.name + mSelectedCity.name + mSelectedDistrict.name);
      }
 });
+// 显示
+mChoiceManageAddressDialog.show();
 ```
 
 ## 源数据
 
 一套比较全的全国地区数据，如果因为业务需要更换，需要重新实现 `void initLocate()` 方法读取省市区数据。
 
-```json
+```js
 {
 	"p": [{
 			"id": 3,
