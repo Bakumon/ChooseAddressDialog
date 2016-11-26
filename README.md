@@ -67,7 +67,7 @@ mChoiceManageAddressDialog.setChoiceCompleteListeners(new ChooseAddressDialog.On
 
 ## 源数据
 
-一套比较全的全国地区数据，如果因业务需要更换，需要重新实现 `void initLocate()` 方法读取省市区数据。
+一套比较全的全国地区数据，如果因为业务需要更换，需要重新实现 `void initLocate()` 方法读取省市区数据。
 
 ```json
 {
