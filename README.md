@@ -79,8 +79,9 @@ mChoiceManageAddressDialog.show();
 		},{
 			"id": 4,
 			"name": "天津市"
-		},
+		}
 		...
+		]
 	"c": {
     		"3": [{
     			"id": 4,
@@ -91,6 +92,7 @@ mChoiceManageAddressDialog.show();
     			"name": "天津市"
     		}],
     	...
+    	}
     "a": {
     		"4": [{
     			"id": 3,
@@ -101,4 +103,6 @@ mChoiceManageAddressDialog.show();
     			"name": "西城区"
     		}
     	...
+    	}
+}
 ```
