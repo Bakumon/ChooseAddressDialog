@@ -23,7 +23,7 @@ public ChooseAddressDialog(Context context) {}
 ```
 ### 2.使用 code 码
 
-默认弹出对话框显示 json 数据的第一个值，即　北京　北京　东城区
+显示省市区 code 对应的值
 
 ```java
 public ChooseAddressDialog(Context context,
@@ -33,7 +33,7 @@ public ChooseAddressDialog(Context context,
 ```
 ### 3.使用 name 值
 
-默认弹出对话框显示 json 数据的第一个值，即　北京　北京　东城区
+显示省市区 name 对应的值
 
 ```java
     /**
