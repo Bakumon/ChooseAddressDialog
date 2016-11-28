@@ -33,7 +33,7 @@ public ChooseAddressDialog(Context context,
 ```
 ### 3.使用 name 值
 
-显示省市区 name 对应的值
+显示省市区 code 或 name 对应的值
 
 ```java
     /**
