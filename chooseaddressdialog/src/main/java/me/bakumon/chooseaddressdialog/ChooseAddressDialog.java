@@ -37,9 +37,9 @@ public class ChooseAddressDialog extends Dialog implements NumberPicker.OnValueC
     private NumberPicker mNpDistricts;//区
     private Button mBtnAffirm; // 确认按钮
 
-    private MProvince mCurrentMProvince;
-    private MCity mCurrentMCity;
-    private MDistrict mCurrentMDistrict;
+    private Province mCurrentProvince;
+    private City mCurrentCity;
+    private District mCurrentDistrict;
 
     private String mInitProvinceCode; // 初始省
     private String mInitCityCode; // 初始市
@@ -52,37 +52,14 @@ public class ChooseAddressDialog extends Dialog implements NumberPicker.OnValueC
     private boolean mInitIsByName; // 是否是用 name 回显 true：name false：code
     private Context mContext;
 
-    /**
-     * 初始化，不回显省市区
-     *
-     * @param context 上下文
-     */
     public ChooseAddressDialog(Context context) {
         this(context, null, null, null, false);
     }
 
-    /**
-     * 仅使用 code 初始化
-     *
-     * @param context          上下文
-     * @param initProvinceCode 省 code
-     * @param initCityCode     市 code
-     * @param initDistrictCode 区 code
-     */
     public ChooseAddressDialog(Context context, String initProvinceCode, String initCityCode, String initDistrictCode) {
         this(context, initProvinceCode, initCityCode, initDistrictCode, false);
     }
 
-    /**
-     * 使用 code 或 name 初始化
-     * note：省市区 code 或 name 需要一致
-     *
-     * @param context      上下文
-     * @param initProvince 省 code 或 name
-     * @param initCity     市 code 或 name
-     * @param initDistrict 区 code 或 name
-     * @param isName       是否是 name
-     */
     public ChooseAddressDialog(Context context, String initProvince, String initCity, String initDistrict, boolean isName) {
         super(context, R.style.Theme_Light_NoTitle_Dialog);
         this.mContext = context;
@@ -104,8 +81,26 @@ public class ChooseAddressDialog extends Dialog implements NumberPicker.OnValueC
         init();
     }
 
+    public ChooseAddressDialog setInitPCDCode(String initProvince, String initCity, String initDistrict) {
+
+        this.mInitProvinceCode = initProvince;
+        this.mInitCityCode = initCity;
+        this.mInitDistrictCode = initDistrict;
+
+        return this;
+    }
+
+    public ChooseAddressDialog setInitPCDName(String initProvince, String initCity, String initDistrict) {
+
+        this.mInitProvinceName = initProvince;
+        this.mInitCityName = initCity;
+        this.mInitDistrictName = initDistrict;
+
+        return this;
+    }
+
     /**
-     * 设置 dialog 位于屏幕底部，并且设置出入动画
+     * 设置 dialog 位于屏幕底部，并且设置出入场动画
      */
     private void setBottomLayout() {
         Window win = getWindow();
@@ -144,21 +139,21 @@ public class ChooseAddressDialog extends Dialog implements NumberPicker.OnValueC
     }
 
 
-    private List<MProvince> mListMProvinces = new ArrayList<>();
+    private List<Province> mListProvinces = new ArrayList<>();
 
-    private static class MProvince {
+    public static class Province {
         public String id;
         public String name;
-        List<MCity> cities;
+        List<City> cities;
     }
 
-    private static class MCity {
+    public static class City {
         public String id;
         public String name;
-        List<MDistrict> mMDistricts;
+        List<District> districts;
     }
 
-    private static class MDistrict {
+    public static class District {
         public String id;
         public String name;
     }
@@ -176,29 +171,29 @@ public class ChooseAddressDialog extends Dialog implements NumberPicker.OnValueC
 
                 if ("p".equals(reader.readString())) {
                     Object objP = reader.readObject();
-                    mListMProvinces = JSON.parseArray(JSON.toJSONString(objP), MProvince.class);
+                    mListProvinces = JSON.parseArray(JSON.toJSONString(objP), Province.class);
                 }
                 if ("c".equals(reader.readString())) {
                     JSONObject objC = (JSONObject) reader.readObject();
-                    for (int i = 0; i < mListMProvinces.size(); i++) {
-                        String provinceId = mListMProvinces.get(i).id;
+                    for (int i = 0; i < mListProvinces.size(); i++) {
+                        String provinceId = mListProvinces.get(i).id;
                         JSONArray objCc = null;
                         for (int j = 0; j < objC.size(); j++) {
                             objCc = (JSONArray) objC.get(provinceId);
                         }
-                        mListMProvinces.get(i).cities = JSON.parseArray(JSON.toJSONString(objCc), MCity.class);
+                        mListProvinces.get(i).cities = JSON.parseArray(JSON.toJSONString(objCc), City.class);
                     }
                 }
                 if ("a".equals(reader.readString())) {
                     JSONObject objD = (JSONObject) reader.readObject();
-                    for (int i = 0; i < mListMProvinces.size(); i++) {
-                        for (int k = 0; k < mListMProvinces.get(i).cities.size(); k++) {
-                            String cityId = mListMProvinces.get(i).cities.get(k).id;
+                    for (int i = 0; i < mListProvinces.size(); i++) {
+                        for (int k = 0; k < mListProvinces.get(i).cities.size(); k++) {
+                            String cityId = mListProvinces.get(i).cities.get(k).id;
                             JSONArray objCc = null;
                             for (int j = 0; j < objD.size(); j++) {
                                 objCc = (JSONArray) objD.get(cityId);
                             }
-                            mListMProvinces.get(i).cities.get(k).mMDistricts = JSON.parseArray(JSON.toJSONString(objCc), MDistrict.class);
+                            mListProvinces.get(i).cities.get(k).districts = JSON.parseArray(JSON.toJSONString(objCc), District.class);
                         }
                     }
                 }
@@ -218,10 +213,10 @@ public class ChooseAddressDialog extends Dialog implements NumberPicker.OnValueC
      */
     private void setView() {
 
-        if (!mListMProvinces.isEmpty()) {
-            String[] displayProvinces1 = new String[mListMProvinces.size()];
-            for (int i = 0; i < mListMProvinces.size(); i++) {
-                displayProvinces1[i] = mListMProvinces.get(i).name;
+        if (!mListProvinces.isEmpty()) {
+            String[] displayProvinces1 = new String[mListProvinces.size()];
+            for (int i = 0; i < mListProvinces.size(); i++) {
+                displayProvinces1[i] = mListProvinces.get(i).name;
             }
             mNpProvinces.setMaxValue(displayProvinces1.length - 1);
             mNpProvinces.setDisplayedValues(displayProvinces1);
@@ -234,8 +229,8 @@ public class ChooseAddressDialog extends Dialog implements NumberPicker.OnValueC
             setNumberPickerDividerColor(mNpProvinces);
             setNumberPickerDividerColor(mNpCities);
             setNumberPickerDividerColor(mNpDistricts);
-            mCurrentMProvince = mListMProvinces.get(0);
-            setDisplayCities(mCurrentMProvince);
+            mCurrentProvince = mListProvinces.get(0);
+            setDisplayCities(mCurrentProvince);
 
             if (!mInitIsByName) {
                 initPCD(mInitProvinceCode, mInitCityCode, mInitDistrictCode, false);
@@ -255,134 +250,95 @@ public class ChooseAddressDialog extends Dialog implements NumberPicker.OnValueC
      */
     private void initPCD(String initProvince, String initCity, String initDistrict, boolean isName) {
         if (!TextUtils.isEmpty(initProvince) && !TextUtils.isEmpty(initCity) && !TextUtils.isEmpty(initDistrict)) {
-            for (int i = 0; i < mListMProvinces.size(); i++) {
-                if (isName ? initProvince.equals(mListMProvinces.get(i).name) : initProvince.equals(mListMProvinces.get(i).id)) {
+            for (int i = 0; i < mListProvinces.size(); i++) {
+                if (isName ? initProvince.equals(mListProvinces.get(i).name) : initProvince.equals(mListProvinces.get(i).id)) {
                     mNpProvinces.setValue(i);
-                    mCurrentMProvince = mListMProvinces.get(i);
-                    setDisplayCities(mCurrentMProvince);
+                    mCurrentProvince = mListProvinces.get(i);
+                    setDisplayCities(mCurrentProvince);
                     break;
                 } else {
                     mNpProvinces.setValue(0);
-                    mCurrentMProvince = mListMProvinces.get(0);
+                    mCurrentProvince = mListProvinces.get(0);
                 }
             }
 
-            if (mCurrentMProvince != null) {
-                for (int i = 0; i < mCurrentMProvince.cities.size(); i++) {
-                    if (isName ? initCity.equals(mCurrentMProvince.cities.get(i).name) : initCity.equals(mCurrentMProvince.cities.get(i).id)) {
+            if (mCurrentProvince != null) {
+                for (int i = 0; i < mCurrentProvince.cities.size(); i++) {
+                    if (isName ? initCity.equals(mCurrentProvince.cities.get(i).name) : initCity.equals(mCurrentProvince.cities.get(i).id)) {
                         mNpCities.setValue(i);
-                        mCurrentMCity = mCurrentMProvince.cities.get(i);
-                        setDisplayDistricts(mCurrentMCity);
+                        mCurrentCity = mCurrentProvince.cities.get(i);
+                        setDisplayDistricts(mCurrentCity);
                         break;
                     } else {
                         mNpCities.setValue(0);
-                        mCurrentMCity = mCurrentMProvince.cities.get(0);
+                        mCurrentCity = mCurrentProvince.cities.get(0);
                     }
                 }
             }
-            if (mCurrentMCity != null) {
-                for (int i = 0; i < mCurrentMCity.mMDistricts.size(); i++) {
-                    if (isName ? initDistrict.equals(mCurrentMCity.mMDistricts.get(i).name) : initDistrict.equals(mCurrentMCity.mMDistricts.get(i).id)) {
+            if (mCurrentCity != null) {
+                for (int i = 0; i < mCurrentCity.districts.size(); i++) {
+                    if (isName ? initDistrict.equals(mCurrentCity.districts.get(i).name) : initDistrict.equals(mCurrentCity.districts.get(i).id)) {
                         mNpDistricts.setValue(i);
-                        mCurrentMDistrict = mCurrentMCity.mMDistricts.get(i);
+                        mCurrentDistrict = mCurrentCity.districts.get(i);
                         break;
                     } else {
                         mNpDistricts.setValue(0);
-                        mCurrentMDistrict = mCurrentMCity.mMDistricts.get(0);
+                        mCurrentDistrict = mCurrentCity.districts.get(0);
                     }
                 }
             }
         }
     }
 
-    private void setDisplayCities(MProvince MProvince) {
+    private void setDisplayCities(Province Province) {
 
-        String[] displayCities = new String[MProvince.cities.size()];
-        for (int i = 0; i < MProvince.cities.size(); i++) {
-            displayCities[i] = MProvince.cities.get(i).name;
+        String[] displayCities = new String[Province.cities.size()];
+        for (int i = 0; i < Province.cities.size(); i++) {
+            displayCities[i] = Province.cities.get(i).name;
         }
         mNpCities.setMaxValue(0);
         mNpCities.setDisplayedValues(displayCities);
         mNpCities.setMaxValue(displayCities.length - 1);
 
-        mCurrentMCity = MProvince.cities.get(0);
-        setDisplayDistricts(mCurrentMCity);
+        mCurrentCity = Province.cities.get(0);
+        setDisplayDistricts(mCurrentCity);
     }
 
 
-    private void setDisplayDistricts(MCity MCity) {
-        String[] displayDistricts = new String[MCity.mMDistricts.size()];
-        for (int i = 0; i < MCity.mMDistricts.size(); i++) {
-            displayDistricts[i] = MCity.mMDistricts.get(i).name;
+    private void setDisplayDistricts(City City) {
+        String[] displayDistricts = new String[City.districts.size()];
+        for (int i = 0; i < City.districts.size(); i++) {
+            displayDistricts[i] = City.districts.get(i).name;
         }
         mNpDistricts.setMaxValue(0);
         mNpDistricts.setDisplayedValues(displayDistricts);
         mNpDistricts.setMaxValue(displayDistricts.length - 1);
 
-        mCurrentMDistrict = MCity.mMDistricts.get(0);
+        mCurrentDistrict = City.districts.get(0);
     }
 
 
     @Override
     public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
         if (picker.getId() == R.id.np_choose_address_province) { // 省 NumberPicker
-            mCurrentMProvince = mListMProvinces.get(newVal);
-            setDisplayCities(mCurrentMProvince);
+            mCurrentProvince = mListProvinces.get(newVal);
+            setDisplayCities(mCurrentProvince);
         } else if (picker.getId() == R.id.np_choose_address_city) { // 市 NumberPicker
-            mCurrentMCity = mCurrentMProvince.cities.get(newVal);
-            setDisplayDistricts(mCurrentMCity);
+            mCurrentCity = mCurrentProvince.cities.get(newVal);
+            setDisplayDistricts(mCurrentCity);
         } else { // 区 NumberPicker
-            mCurrentMDistrict = mCurrentMCity.mMDistricts.get(newVal);
+            mCurrentDistrict = mCurrentCity.districts.get(newVal);
         }
     }
 
     @Override
     public void onClick(View v) {
         if (v.getId() == R.id.btn_choose_address_affirm) {
-            Province province = new Province(mCurrentMProvince.id, mCurrentMProvince.name);
-            City city = new City(mCurrentMCity.id, mCurrentMCity.name);
-            District districtFor = new District(mCurrentMDistrict.id, mCurrentMDistrict.name);
             if (mOnChoiceCompleteListeners != null) {
-                mOnChoiceCompleteListeners.onChoiceComplete(province, city, districtFor);
+                mOnChoiceCompleteListeners.onChoiceComplete(mCurrentProvince, mCurrentCity, mCurrentDistrict);
             }
             cancel();
         }
-    }
-
-    /**
-     * 用于设置回调数据
-     * Province
-     * City
-     * District
-     */
-    public static class Province {
-        public Province(String id, String name) {
-            this.id = id;
-            this.name = name;
-        }
-
-        public String id;
-        public String name;
-    }
-
-    public static class City {
-        public City(String id, String name) {
-            this.id = id;
-            this.name = name;
-        }
-
-        public String id;
-        public String name;
-    }
-
-    public static class District {
-        public District(String id, String name) {
-            this.id = id;
-            this.name = name;
-        }
-
-        public String id;
-        public String name;
     }
 
     /**
@@ -405,7 +361,7 @@ public class ChooseAddressDialog extends Dialog implements NumberPicker.OnValueC
             if (pf.getName().equals("mSelectionDivider")) {
                 pf.setAccessible(true);
                 try {
-                    //设置分割线的颜色值this.getResources().getColor(R.color.green)
+                    //设置分割线的颜色
                     pf.set(numberPicker, new ColorDrawable(mContext.getResources().getColor(R.color.colorHalvingLine)));
                 } catch (Exception e) {
                     break;
@@ -421,6 +377,7 @@ public class ChooseAddressDialog extends Dialog implements NumberPicker.OnValueC
             if (pf.getName().equals("mSelectionDividerHeight")) {
                 pf.setAccessible(true);
                 try {
+                    // 设置分割线的高度 1 px
                     pf.setInt(numberPicker, 1);
                 } catch (Exception e) {
                     e.printStackTrace();
