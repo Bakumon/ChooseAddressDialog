@@ -58,7 +58,7 @@ public ChooseAddressDialog(Context context,
 ```java
 mChoiceManageAddressDialog.setChoiceCompleteListeners(new ChooseAddressDialog.OnChoiceCompleteListeners() {
      @Override
-     public void onChoiceComplete(ChooseAddressDialog.Province province, ChooseAddressDialog.City city, ChooseAddressDialog.District districtFor) {
+     public void onChoiceComplete(ChooseAddressDialog.Province province, ChooseAddressDialog.City city, ChooseAddressDialog.District areaFor) {
         // 设置选中省市区显示
         mTvArea.setText("" + mSelectedProvince.name + mSelectedCity.name + mSelectedDistrict.name);
      }

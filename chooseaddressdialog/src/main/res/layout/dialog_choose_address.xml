@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical">
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="vertical">
 
     <Button
         android:id="@+id/btn_choose_address_affirm"
@@ -11,7 +11,7 @@
         android:background="@drawable/selector_primary_dark"
         android:text="确认"
         android:textColor="#FFFFFF"
-        android:textSize="18sp" />
+        android:textSize="18sp"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -30,7 +30,7 @@
                 android:id="@+id/np_choose_address_province"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp" />
+                android:layout_marginLeft="10dp"/>
         </LinearLayout>
 
         <LinearLayout
@@ -42,7 +42,7 @@
             <NumberPicker
                 android:id="@+id/np_choose_address_city"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"/>
         </LinearLayout>
 
         <LinearLayout
@@ -55,7 +55,7 @@
             <NumberPicker
                 android:id="@+id/np_choose_address_districts"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"/>
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>

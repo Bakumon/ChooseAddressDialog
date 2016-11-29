@@ -11,14 +11,8 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.NumberPicker;
+import android.widget.Toast;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.JSONReader;
-
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,177 +33,103 @@ public class ChooseAddressDialog extends Dialog implements NumberPicker.OnValueC
 
     private Province mCurrentProvince;
     private City mCurrentCity;
-    private District mCurrentDistrict;
+    private Area mCurrentArea;
 
-    private String mInitProvinceCode; // 初始省
-    private String mInitCityCode; // 初始市
-    private String mInitDistrictCode; // 初始区
-
-    private String mInitProvinceName; // 初始省
-    private String mInitCityName; // 初始市
-    private String mInitDistrictName; // 初始区
-
-    private boolean mInitIsByName; // 是否是用 name 回显 true：name false：code
+    private boolean mInitIsByName; // 是否是用 name 回显 true：name false：id
     private Context mContext;
-
-    public ChooseAddressDialog(Context context) {
-        this(context, null, null, null, false);
-    }
-
-    public ChooseAddressDialog(Context context, String initProvinceCode, String initCityCode, String initDistrictCode) {
-        this(context, initProvinceCode, initCityCode, initDistrictCode, false);
-    }
-
-    public ChooseAddressDialog(Context context, String initProvince, String initCity, String initDistrict, boolean isName) {
-        super(context, R.style.Theme_Light_NoTitle_Dialog);
-        this.mContext = context;
-        View view = LayoutInflater.from(context).inflate(R.layout.dialog_choose_address, null);
-        this.setContentView(view);
-        setBottomLayout();
-        if (!TextUtils.isEmpty(initProvince) && !TextUtils.isEmpty(initCity) && !TextUtils.isEmpty(initDistrict)) {
-            if (isName) {
-                this.mInitProvinceName = initProvince;
-                this.mInitCityName = initCity;
-                this.mInitDistrictName = initDistrict;
-            } else {
-                this.mInitProvinceCode = initProvince;
-                this.mInitCityCode = initCity;
-                this.mInitDistrictCode = initDistrict;
-            }
-            this.mInitIsByName = isName;
-        }
-        init();
-    }
-
-    public ChooseAddressDialog setInitPCDCode(String initProvince, String initCity, String initDistrict) {
-
-        this.mInitProvinceCode = initProvince;
-        this.mInitCityCode = initCity;
-        this.mInitDistrictCode = initDistrict;
-
-        return this;
-    }
-
-    public ChooseAddressDialog setInitPCDName(String initProvince, String initCity, String initDistrict) {
-
-        this.mInitProvinceName = initProvince;
-        this.mInitCityName = initCity;
-        this.mInitDistrictName = initDistrict;
-
-        return this;
-    }
-
-    /**
-     * 设置 dialog 位于屏幕底部，并且设置出入场动画
-     */
-    private void setBottomLayout() {
-        Window win = getWindow();
-        if (win != null) {
-            win.getDecorView().setPadding(0, 0, 0, 0);
-            WindowManager.LayoutParams lp = win.getAttributes();
-            lp.width = WindowManager.LayoutParams.MATCH_PARENT;
-            lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
-            win.setAttributes(lp);
-            win.setGravity(Gravity.BOTTOM);
-            win.setWindowAnimations(R.style.Animation_Bottom);
-        }
-    }
-
-    /**
-     * 初始化控件  绑定事件
-     */
-    private void init() {
-        mNpProvinces = (NumberPicker) findViewById(R.id.np_choose_address_province);
-        mNpCities = (NumberPicker) findViewById(R.id.np_choose_address_city);
-        mNpDistricts = (NumberPicker) findViewById(R.id.np_choose_address_districts);
-        mBtnAffirm = (Button) findViewById(R.id.btn_choose_address_affirm);
-
-        initLocate();
-        //使NumberPicker不弹出输入框
-        mNpProvinces.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
-        mNpCities.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
-        mNpDistricts.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
-        mBtnAffirm.setOnClickListener(this);
-
-        mNpProvinces.setOnValueChangedListener(this);
-        mNpCities.setOnValueChangedListener(this);
-        mNpDistricts.setOnValueChangedListener(this);
-
-
-    }
 
 
     private List<Province> mListProvinces = new ArrayList<>();
 
-    public static class Province {
-        public String id;
-        public String name;
-        List<City> cities;
-    }
+    public ChooseAddressDialog(Context context) {
+        super(context, R.style.Theme_Light_NoTitle_Dialog);
+        this.mContext = context;
+        View view = LayoutInflater.from(context).inflate(R.layout.dialog_choose_address, null);
+        this.setContentView(view);
 
-    public static class City {
-        public String id;
-        public String name;
-        List<District> districts;
-    }
-
-    public static class District {
-        public String id;
-        public String name;
+        initView();
     }
 
     /**
-     * 初始化省市区数据
+     * 设置省市区数据
+     *
+     * @param listProvinces List<Province>
+     * @return this
      */
-    private void initLocate() {
-        try {
-            InputStream inputStream = mContext.getAssets().open("city.json");
-
-            JSONReader reader = new JSONReader(new InputStreamReader(inputStream));
-            reader.startObject();
-            while (reader.hasNext()) {
-
-                if ("p".equals(reader.readString())) {
-                    Object objP = reader.readObject();
-                    mListProvinces = JSON.parseArray(JSON.toJSONString(objP), Province.class);
-                }
-                if ("c".equals(reader.readString())) {
-                    JSONObject objC = (JSONObject) reader.readObject();
-                    for (int i = 0; i < mListProvinces.size(); i++) {
-                        String provinceId = mListProvinces.get(i).id;
-                        JSONArray objCc = null;
-                        for (int j = 0; j < objC.size(); j++) {
-                            objCc = (JSONArray) objC.get(provinceId);
-                        }
-                        mListProvinces.get(i).cities = JSON.parseArray(JSON.toJSONString(objCc), City.class);
-                    }
-                }
-                if ("a".equals(reader.readString())) {
-                    JSONObject objD = (JSONObject) reader.readObject();
-                    for (int i = 0; i < mListProvinces.size(); i++) {
-                        for (int k = 0; k < mListProvinces.get(i).cities.size(); k++) {
-                            String cityId = mListProvinces.get(i).cities.get(k).id;
-                            JSONArray objCc = null;
-                            for (int j = 0; j < objD.size(); j++) {
-                                objCc = (JSONArray) objD.get(cityId);
-                            }
-                            mListProvinces.get(i).cities.get(k).districts = JSON.parseArray(JSON.toJSONString(objCc), District.class);
-                        }
-                    }
-                }
-            }
-            reader.endObject();
-            reader.close();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        //解析完成显示数据
-        setView();
+    public ChooseAddressDialog setAddressData(List<Province> listProvinces) {
+        mListProvinces = listProvinces;
+        return this;
     }
 
     /**
-     * 解析完成显示数据
+     * 通过 code 回显省市区
+     *
+     * @param initProvinceCode 省 code
+     * @param initCityCode     市 code
+     * @param initAreaCode     区 code
+     * @return this
+     */
+    public ChooseAddressDialog setInitPCDCode(String initProvinceCode, String initCityCode, String initAreaCode) {
+
+        if (TextUtils.isEmpty(initProvinceCode) && TextUtils.isEmpty(initCityCode) && TextUtils.isEmpty(initAreaCode)) {
+            return this;
+        }
+
+        mCurrentProvince = new Province();
+        mCurrentProvince.id = initProvinceCode;
+
+        mCurrentCity = new City();
+        mCurrentCity.id = initCityCode;
+
+        mCurrentArea = new Area();
+        mCurrentArea.id = initAreaCode;
+
+        mInitIsByName = false;
+        return this;
+    }
+
+    /**
+     * 通过 name 回显省市区
+     *
+     * @param initProvinceName 省 name
+     * @param initCityName     市 name
+     * @param initDistrictName 区 name
+     * @return this
+     */
+    public ChooseAddressDialog setInitPCDName(String initProvinceName, String initCityName, String initDistrictName) {
+
+        if (TextUtils.isEmpty(initProvinceName) && TextUtils.isEmpty(initCityName) && TextUtils.isEmpty(initDistrictName)) {
+            return this;
+        }
+
+        mCurrentProvince = new Province();
+        mCurrentProvince.name = initProvinceName;
+
+        mCurrentCity = new City();
+        mCurrentCity.name = initCityName;
+
+        mCurrentArea = new Area();
+        mCurrentArea.name = initDistrictName;
+
+        mInitIsByName = true;
+        return this;
+    }
+
+    @Override
+    public void show() {
+        if (mListProvinces.isEmpty()) {
+            Toast.makeText(mContext, "需要设置省市区数据", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        setView();
+        if (!isShowing()) {
+            super.show();
+        }
+    }
+
+
+    /**
+     * 显示数据
      */
     private void setView() {
 
@@ -220,22 +140,16 @@ public class ChooseAddressDialog extends Dialog implements NumberPicker.OnValueC
             }
             mNpProvinces.setMaxValue(displayProvinces1.length - 1);
             mNpProvinces.setDisplayedValues(displayProvinces1);
-            //设置分割线的高度
-            setNumberPickerDividerHeight(mNpProvinces);
-            setNumberPickerDividerHeight(mNpCities);
-            setNumberPickerDividerHeight(mNpDistricts);
 
-            //设置分割线的颜色
-            setNumberPickerDividerColor(mNpProvinces);
-            setNumberPickerDividerColor(mNpCities);
-            setNumberPickerDividerColor(mNpDistricts);
-            mCurrentProvince = mListProvinces.get(0);
-            setDisplayCities(mCurrentProvince);
-
-            if (!mInitIsByName) {
-                initPCD(mInitProvinceCode, mInitCityCode, mInitDistrictCode, false);
-            } else { // name
-                initPCD(mInitProvinceName, mInitCityName, mInitDistrictName, true);
+            if (mCurrentProvince != null) {
+                if (mInitIsByName) {
+                    initPCD(mCurrentProvince.name, mCurrentCity.name, mCurrentArea.name, true);
+                } else { // name
+                    initPCD(mCurrentProvince.id, mCurrentCity.id, mCurrentArea.id, false);
+                }
+            } else {
+                mCurrentProvince = mListProvinces.get(0);
+                setDisplayCities(mCurrentProvince);
             }
         }
     }
@@ -243,9 +157,9 @@ public class ChooseAddressDialog extends Dialog implements NumberPicker.OnValueC
     /**
      * 回显省市区
      *
-     * @param initProvince 省 code 或 name
-     * @param initCity     市 code 或 name
-     * @param initDistrict 区 code 或 name
+     * @param initProvince 省 id 或 name
+     * @param initCity     市 id 或 name
+     * @param initDistrict 区 id 或 name
      * @param isName       是否是 name
      */
     private void initPCD(String initProvince, String initCity, String initDistrict, boolean isName) {
@@ -276,20 +190,23 @@ public class ChooseAddressDialog extends Dialog implements NumberPicker.OnValueC
                 }
             }
             if (mCurrentCity != null) {
-                for (int i = 0; i < mCurrentCity.districts.size(); i++) {
-                    if (isName ? initDistrict.equals(mCurrentCity.districts.get(i).name) : initDistrict.equals(mCurrentCity.districts.get(i).id)) {
+                for (int i = 0; i < mCurrentCity.mAreas.size(); i++) {
+                    if (isName ? initDistrict.equals(mCurrentCity.mAreas.get(i).name) : initDistrict.equals(mCurrentCity.mAreas.get(i).id)) {
                         mNpDistricts.setValue(i);
-                        mCurrentDistrict = mCurrentCity.districts.get(i);
+                        mCurrentArea = mCurrentCity.mAreas.get(i);
                         break;
                     } else {
                         mNpDistricts.setValue(0);
-                        mCurrentDistrict = mCurrentCity.districts.get(0);
+                        mCurrentArea = mCurrentCity.mAreas.get(0);
                     }
                 }
             }
         }
     }
 
+    /**
+     * 设置省对应的所有市
+     */
     private void setDisplayCities(Province Province) {
 
         String[] displayCities = new String[Province.cities.size()];
@@ -304,17 +221,19 @@ public class ChooseAddressDialog extends Dialog implements NumberPicker.OnValueC
         setDisplayDistricts(mCurrentCity);
     }
 
-
+    /**
+     * 设置市对应的所有区
+     */
     private void setDisplayDistricts(City City) {
-        String[] displayDistricts = new String[City.districts.size()];
-        for (int i = 0; i < City.districts.size(); i++) {
-            displayDistricts[i] = City.districts.get(i).name;
+        String[] displayDistricts = new String[City.mAreas.size()];
+        for (int i = 0; i < City.mAreas.size(); i++) {
+            displayDistricts[i] = City.mAreas.get(i).name;
         }
         mNpDistricts.setMaxValue(0);
         mNpDistricts.setDisplayedValues(displayDistricts);
         mNpDistricts.setMaxValue(displayDistricts.length - 1);
 
-        mCurrentDistrict = City.districts.get(0);
+        mCurrentArea = City.mAreas.get(0);
     }
 
 
@@ -327,7 +246,7 @@ public class ChooseAddressDialog extends Dialog implements NumberPicker.OnValueC
             mCurrentCity = mCurrentProvince.cities.get(newVal);
             setDisplayDistricts(mCurrentCity);
         } else { // 区 NumberPicker
-            mCurrentDistrict = mCurrentCity.districts.get(newVal);
+            mCurrentArea = mCurrentCity.mAreas.get(newVal);
         }
     }
 
@@ -335,26 +254,75 @@ public class ChooseAddressDialog extends Dialog implements NumberPicker.OnValueC
     public void onClick(View v) {
         if (v.getId() == R.id.btn_choose_address_affirm) {
             if (mOnChoiceCompleteListeners != null) {
-                mOnChoiceCompleteListeners.onChoiceComplete(mCurrentProvince, mCurrentCity, mCurrentDistrict);
+                mOnChoiceCompleteListeners.onChoiceComplete(mCurrentProvince, mCurrentCity, mCurrentArea);
             }
             cancel();
         }
     }
 
     /**
+     * 初始化控件  绑定事件
+     */
+    private void initView() {
+        mNpProvinces = (NumberPicker) findViewById(R.id.np_choose_address_province);
+        mNpCities = (NumberPicker) findViewById(R.id.np_choose_address_city);
+        mNpDistricts = (NumberPicker) findViewById(R.id.np_choose_address_districts);
+        mBtnAffirm = (Button) findViewById(R.id.btn_choose_address_affirm);
+
+        //设置分割线的高度
+        setNumberPickerDividerHeight(mNpProvinces);
+        setNumberPickerDividerHeight(mNpCities);
+        setNumberPickerDividerHeight(mNpDistricts);
+        //设置分割线的颜色
+        setNumberPickerDividerColor(mNpProvinces);
+        setNumberPickerDividerColor(mNpCities);
+        setNumberPickerDividerColor(mNpDistricts);
+        //使NumberPicker不弹出输入框
+        mNpProvinces.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
+        mNpCities.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
+        mNpDistricts.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
+
+        mBtnAffirm.setOnClickListener(this);
+        mNpProvinces.setOnValueChangedListener(this);
+        mNpCities.setOnValueChangedListener(this);
+        mNpDistricts.setOnValueChangedListener(this);
+
+        setBottomLayout();
+    }
+
+    /**
      * 选择完成监听器
      */
     public interface OnChoiceCompleteListeners {
-        void onChoiceComplete(Province province, City city, District districtFor);
+        void onChoiceComplete(Province province, City city, Area areaFor);
     }
 
     private OnChoiceCompleteListeners mOnChoiceCompleteListeners;
 
-    public void setChoiceCompleteListeners(OnChoiceCompleteListeners listeners) {
+    public ChooseAddressDialog setChoiceCompleteListeners(OnChoiceCompleteListeners listeners) {
         this.mOnChoiceCompleteListeners = listeners;
+        return this;
     }
 
-    //设置分割线的颜色
+    /**
+     * 设置 dialog 位于屏幕底部，并且设置出入场动画
+     */
+    private void setBottomLayout() {
+        Window win = getWindow();
+        if (win != null) {
+            win.getDecorView().setPadding(0, 0, 0, 0);
+            WindowManager.LayoutParams lp = win.getAttributes();
+            lp.width = WindowManager.LayoutParams.MATCH_PARENT;
+            lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
+            win.setAttributes(lp);
+            win.setGravity(Gravity.BOTTOM);
+            win.setWindowAnimations(R.style.Animation_Bottom);
+        }
+    }
+
+    /**
+     * 设置分割线的颜色
+     */
     private void setNumberPickerDividerColor(NumberPicker numberPicker) {
         Field[] pickerFields = NumberPicker.class.getDeclaredFields();
         for (Field pf : pickerFields) {
@@ -370,7 +338,9 @@ public class ChooseAddressDialog extends Dialog implements NumberPicker.OnValueC
         }
     }
 
-    //设置分割线的高度
+    /**
+     * 设置分割线的高度
+     */
     private void setNumberPickerDividerHeight(NumberPicker numberPicker) {
         Field[] pickerFields = NumberPicker.class.getDeclaredFields();
         for (Field pf : pickerFields) {
@@ -387,4 +357,20 @@ public class ChooseAddressDialog extends Dialog implements NumberPicker.OnValueC
         }
     }
 
+    public static class Province {
+        public String id;
+        public String name;
+        public List<City> cities;
+    }
+
+    public static class City {
+        public String id;
+        public String name;
+        public List<Area> mAreas;
+    }
+
+    public static class Area {
+        public String id;
+        public String name;
+    }
 }
