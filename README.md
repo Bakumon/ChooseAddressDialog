@@ -10,99 +10,34 @@
 
 详细看这里：[自定义底部省市区选择 Dialog——宽度充满屏幕](http://bakumon.me/2016/11/24/android-dialog-bottom/)
 
-## 初始化
-
-提供了三个构造器供初始化省市区使用
-
-### 1.默认
-
-默认弹出对话框显示 json 数据的第一个值，即　北京　北京　东城区
+## usage
 
 ```java
-public ChooseAddressDialog(Context context) {}
-```
-### 2.使用 code 码
+// 解析数据需要放在非 UI 线程中
+final List<ChooseAddressDialog.Province> listProvinces = new DefaultAddressProvider().getAddressData(MainActivity.this);
 
-显示省市区 code 对应的值
-
-```java
-public ChooseAddressDialog(Context context,
-                            String initProvinceCode,
-                            String initCityCode,
-                            String initDistrictCode) {}
-```
-### 3.使用 name 值
-
-显示省市区 code 或 name 对应的值
-
-```java
-    /**
-     * 使用 code 或 name 初始化
-     * note：省市区 code 或 name 需要一致
-     *
-     * @param context      上下文
-     * @param initProvince 省 code 或 name
-     * @param initCity     市 code 或 name
-     * @param initDistrict 区 code 或 name
-     * @param isName       是否是 name
-     */
-public ChooseAddressDialog(Context context,
-                            String initProvince,
-                            String initCity,
-                            String initDistrict,
-                            boolean isName) {}
-```
-
-## 监听器
-
-```java
-mChoiceManageAddressDialog.setChoiceCompleteListeners(new ChooseAddressDialog.OnChoiceCompleteListeners() {
-     @Override
-     public void onChoiceComplete(ChooseAddressDialog.Province province, ChooseAddressDialog.City city, ChooseAddressDialog.District areaFor) {
-        // 设置选中省市区显示
-        mTvArea.setText("" + mSelectedProvince.name + mSelectedCity.name + mSelectedDistrict.name);
-     }
+mBtnAffirm.setOnClickListener(new View.OnClickListener() {
+    @Override
+    public void onClick(View view) {
+        new ChooseAddressDialog(MainActivity.this)
+        // 如果不设置，每次显示对话框都会加载一次默认的数据，这样不好
+        .setAddressData(listProvinces)
+        .setInitPCDCode(mSelectedProvince != null ? mSelectedProvince.id : "",
+        mSelectedCity != null ? mSelectedCity.id : "",
+        mSelectedArea != null ? mSelectedArea.id : "")
+        //.setInitPCDName("陕西省", "西安市", "雁塔区")
+        .setChoiceCompleteListeners(new ChooseAddressDialog.OnChoiceCompleteListeners() {
+            @Override
+            public void onChoiceComplete(ChooseAddressDialog.Province province, ChooseAddressDialog.City city, ChooseAddressDialog.Area areaFor) {
+                mSelectedProvince = province;
+                mSelectedCity = city;
+                mSelectedArea = areaFor;
+                if (mSelectedProvince != null && mSelectedCity != null && mSelectedArea != null) {
+                    mBtnAffirm.setText("" + mSelectedProvince.name + mSelectedCity.name + mSelectedArea.name);
+                }
+            }
+        })
+        .show();
+    }
 });
-// 显示
-mChoiceManageAddressDialog.show();
-```
-
-## 源数据
-
-一套比较全的全国地区数据，如果因为业务需要更换，需要重新实现 `void initLocate()` 方法读取省市区数据。
-
-```js
-{
-	"p": [{
-			"id": 3,
-			"name": "北京市"
-		},{
-			"id": 4,
-			"name": "天津市"
-		}
-		...
-		]
-	"c": {
-    		"3": [{
-    			"id": 4,
-    			"name": "北京市"
-    		}],
-    		"4": [{
-    			"id": 5,
-    			"name": "天津市"
-    		}],
-    	...
-    	}
-    "a": {
-    		"4": [{
-    			"id": 3,
-    			"name": "东城区"
-    		},
-    		{
-    			"id": 4,
-    			"name": "西城区"
-    		}
-    	...
-    	}
-}
 ```
