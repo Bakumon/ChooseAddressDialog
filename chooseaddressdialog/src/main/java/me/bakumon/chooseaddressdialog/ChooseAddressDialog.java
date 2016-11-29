@@ -1,4 +1,4 @@
-package io.github.bakumon.chooseaddressdialog.view;
+package me.bakumon.chooseaddressdialog;
 
 import android.app.Dialog;
 import android.content.Context;
@@ -22,8 +22,6 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
-
-import io.github.bakumon.chooseaddressdialog.R;
 
 
 /**
@@ -327,33 +325,27 @@ public class ChooseAddressDialog extends Dialog implements NumberPicker.OnValueC
 
     @Override
     public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
-        switch (picker.getId()) {
-            case R.id.np_choose_address_province:
-                mCurrentMProvince = mListMProvinces.get(newVal);
-                setDisplayCities(mCurrentMProvince);
-                break;
-            case R.id.np_choose_address_city:
-                mCurrentMCity = mCurrentMProvince.cities.get(newVal);
-                setDisplayDistricts(mCurrentMCity);
-                break;
-            case R.id.np_choose_address_districts:
-                mCurrentMDistrict = mCurrentMCity.mMDistricts.get(newVal);
-                break;
+        if (picker.getId() == R.id.np_choose_address_province) { // 省 NumberPicker
+            mCurrentMProvince = mListMProvinces.get(newVal);
+            setDisplayCities(mCurrentMProvince);
+        } else if (picker.getId() == R.id.np_choose_address_city) { // 市 NumberPicker
+            mCurrentMCity = mCurrentMProvince.cities.get(newVal);
+            setDisplayDistricts(mCurrentMCity);
+        } else { // 区 NumberPicker
+            mCurrentMDistrict = mCurrentMCity.mMDistricts.get(newVal);
         }
     }
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.btn_choose_address_affirm: // 确认
-                Province province = new Province(mCurrentMProvince.id, mCurrentMProvince.name);
-                City city = new City(mCurrentMCity.id, mCurrentMCity.name);
-                District districtFor = new District(mCurrentMDistrict.id, mCurrentMDistrict.name);
-                if (mOnChoiceCompleteListeners != null) {
-                    mOnChoiceCompleteListeners.onChoiceComplete(province, city, districtFor);
-                }
-                cancel();
-                break;
+        if (v.getId() == R.id.btn_choose_address_affirm) {
+            Province province = new Province(mCurrentMProvince.id, mCurrentMProvince.name);
+            City city = new City(mCurrentMCity.id, mCurrentMCity.name);
+            District districtFor = new District(mCurrentMDistrict.id, mCurrentMDistrict.name);
+            if (mOnChoiceCompleteListeners != null) {
+                mOnChoiceCompleteListeners.onChoiceComplete(province, city, districtFor);
+            }
+            cancel();
         }
     }
 
@@ -414,7 +406,7 @@ public class ChooseAddressDialog extends Dialog implements NumberPicker.OnValueC
                 pf.setAccessible(true);
                 try {
                     //设置分割线的颜色值this.getResources().getColor(R.color.green)
-                    pf.set(numberPicker, new ColorDrawable(mContext.getResources().getColor(R.color.colorAccent)));
+                    pf.set(numberPicker, new ColorDrawable(mContext.getResources().getColor(R.color.colorHalvingLine)));
                 } catch (Exception e) {
                     break;
                 }
