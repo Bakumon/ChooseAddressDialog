@@ -8,7 +8,7 @@
 
 利用 `WindowManager` 设置 Dialog 的布局和入场动画，解决 Dialog 位于底部宽度无法充满屏幕。
 
-详细看这里：[自定义底部省市区选择 Dialog——宽度充满屏幕](http://bakumon.me/2016/11/24/android-dialog-bottom/)
+详细看这里：[自定义底部省市区选择 Dialog——宽度充满屏幕](https://github.com/Bakumon/blog/issues/3)
 
 ## usage
 
